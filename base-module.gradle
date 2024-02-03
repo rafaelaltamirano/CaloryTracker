@@ -30,6 +30,11 @@ android {
     kotlinOptions {
         jvmTarget = '18'
     }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.md'
+    }
+
 }
 
 dependencies {
