@@ -7,6 +7,10 @@ apply(from = "$rootDir/base-module.gradle")
 
 android {
     namespace = "com.plcoding.tracker_data"
+
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
 }
 
 dependencies {
