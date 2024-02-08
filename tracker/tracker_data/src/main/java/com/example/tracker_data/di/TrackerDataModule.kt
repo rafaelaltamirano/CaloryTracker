@@ -1,6 +1,11 @@
 package com.example.tracker_data.di
 
+import android.app.Application
+import androidx.room.Room
 import com.example.tracker_data.OpenFoodApi
+import com.example.tracker_data.local.TrackerDatabase
+import com.example.tracker_data.repository.TrackerRepositoryImpl
+import com.example.tracker_domain.repository.TrackerRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,24 +24,39 @@ object TrackerDataModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                }
-            )
-            .build()
+        return OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }).build()
     }
 
     @Provides
     @Singleton
     fun provideOpenFoodApi(client: OkHttpClient): OpenFoodApi {
-        return Retrofit.Builder()
-            .baseUrl(OpenFoodApi.BASE_URL)
+        return Retrofit.Builder().baseUrl(OpenFoodApi.BASE_URL)
             //PARSE AUTOMATICALLY DE JSON RESPONSE TO OUR DTO OBJECT
-            .addConverterFactory(MoshiConverterFactory.create())
-            .client(client)
-            .build()
-            .create()
+            .addConverterFactory(MoshiConverterFactory.create()).client(client).build().create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTrackerDatabase(app: Application): TrackerDatabase {
+        return Room.databaseBuilder(
+            app,
+            TrackerDatabase::class.java,
+            "tracker.db",
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTrackerRepository(
+        api: OpenFoodApi,
+        db: TrackerDatabase
+    ): TrackerRepository
+    {
+        return TrackerRepositoryImpl(
+            dao = db.trackerDao,
+            api = api
+        )
     }
 }
